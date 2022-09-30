@@ -1,27 +1,27 @@
 ; Porto Alegre, outubro de 2021
 ; Andrei Pochmann Koenich
-; MatrÌcula: 00308680
-; Trabalho de programaÁ„o - Processador CESAR - Semestre 2021/1
+; Matr√≠cula: 00308680
+; Trabalho de programa√ß√£o - Processador CESAR - Semestre 2021/1
 
-; O programa a seguir consiste em uma implementaÁ„o do Kernel e as funÁıes da API (Application Programming Interface). Isso envolve a
-; inicializaÁ„o do Kernel e suas vari·veis, a inicializaÁ„o do sistema de interrupÁıes, os tratadores de interrupÁ„o do teclado e do
-; timer, e algumas funÁıes de "sistema". ApÛs encerrados todos os procedimentos de inicializaÁ„o do Kernel, ser· executado um desvio (JMP) para
-; o endereÁo onde est· o programa de aplicaÁ„o (fornecido pelos professores), de maneira a iniciar sua operaÁ„o. As ·reas de memÛria do programa
-; est„o todas descritas abaixo. Acima de cada funÁ„o implementada, h· uma descriÁ„o sobre o seu funcionamento.
+; O programa a seguir consiste em uma implementa√ß√£o do Kernel e as fun√ß√µes da API (Application Programming Interface). Isso envolve a
+; inicializa√ß√£o do Kernel e suas vari√°veis, a inicializa√ß√£o do sistema de interrup√ß√µes, os tratadores de interrup√ß√£o do teclado e do
+; timer, e algumas fun√ß√µes de "sistema". Ap√≥s encerrados todos os procedimentos de inicializa√ß√£o do Kernel, ser√° executado um desvio (JMP) para
+; o endere√ßo onde est√° o programa de aplica√ß√£o (fornecido pelos professores), de maneira a iniciar sua opera√ß√£o. As √°reas de mem√≥ria do programa
+; est√£o todas descritas abaixo. Acima de cada fun√ß√£o implementada, h√° uma descri√ß√£o sobre o seu funcionamento.
 
 ;******************************************************************************
 ;
-;	¡reas de MemÛria
+;	√Åreas de Mem√≥ria
 ;
 ;	0000 - 7FFF		_KERNEL
-;					¡rea de Kernel para implementaÁ„o dos alunos.
+;					√Årea de Kernel para implementa√ß√£o dos alunos.
 ;
 ;	0100 - 01FF		_VETTAB
-;					Tabela com os vetores das funÁıes do kernel.
+;					Tabela com os vetores das fun√ß√µes do kernel.
 ;
 ;	8000 - FF7F		_APP
-;					¡rea onde ser· colocado o programa de aplicaÁ„o.
-;					Esse programa far· o acesso aos perifÈricos e interrupÁıes, atravÈs das funÁıes do Kernel.
+;					√Årea onde ser√° colocado o programa de aplica√ß√£o.
+;					Esse programa far√° o acesso aos perif√©ricos e interrup√ß√µes, atrav√©s das fun√ß√µes do Kernel.
 ;
 ;	FF80 - FFBF 		_IOAREA16
 ;					Area de perifericos, acessada na base 16 bits.
@@ -38,18 +38,18 @@ _IOAREA16:	EQU	HFF80
 _IOAREA08:	EQU	HFFC0
 
 ;------------------------------------------------------------------------------
-;	¡rea reservada para os perifÈricos
+;	√Årea reservada para os perif√©ricos
 ;------------------------------------------------------------------------------
 
 ; Acesso em 16 bits
 		ORG		_IOAREA16
 		DAW		[31]
-IVET:	DAW		0			; Vetor de interrupÁ„o
+IVET:	DAW		0			; Vetor de interrup√ß√£o
 
 ; Acesso em 8 bits
 		ORG		_IOAREA08
 		DAB		[23]
-TIMDT:	DB		0			; Registro de programaÁ„o do timer
+TIMDT:	DB		0			; Registro de programa√ß√£o do timer
 INTS:	DB		0			; INTERRUPT STATUS: IP x x x . x x IPStec IPStim
 INTE:	DB		0			; INTERRUPT ENABLE: IE x x x . x x IEStec IEStim
 TECST:	DB		0			; Status do teclado
@@ -65,7 +65,7 @@ VISOR:	DAB		[36]			; Portas de acesso ao visor
 		JMP		_RESET
 
 ;------------------------------------------------------------------------------
-;	Area do kernel com os vetores das funÁıes do kernel
+;	Area do kernel com os vetores das fun√ß√µes do kernel
 ;------------------------------------------------------------------------------
 
 		ORG		_VETTAB
@@ -78,58 +78,58 @@ VISOR:	DAB		[36]			; Portas de acesso ao visor
 		DW		_clr_clock
 
 ;------------------------------------------------------------------------------
-;	CÛdigo de RESET (BOOT) do processador/interrupÁ„o
+;	C√≥digo de RESET (BOOT) do processador/interrup√ß√£o
 ;------------------------------------------------------------------------------
 
 		ORG		_VETTAB+H0100
 
 _RESET:
 
-; 1) Desabilitar o sistema de interrupÁıes
+; 1) Desabilitar o sistema de interrup√ß√µes
 
-		MOV #0,INTE	; Desabilita o sistema de interrupÁıes, movendo 0 para o endereÁo INTE.
+		MOV #0,INTE	; Desabilita o sistema de interrup√ß√µes, movendo 0 para o endere√ßo INTE.
 
 ; 2) Inicializar o stack pointer (SP = R6)
 
-		MOV #H7FFD,R6	; Inicializa o ponteiro de pilha na ˙ltima posiÁ„o de memÛria disponÌvel.
+		MOV #H7FFD,R6	; Inicializa o ponteiro de pilha na √∫ltima posi√ß√£o de mem√≥ria dispon√≠vel.
 
-; 3) Inicializar as vari·veis internas usadas pelo sistema de interrupÁıes e perifÈricos (IVET, INTE, etc.)
+; 3) Inicializar as vari√°veis internas usadas pelo sistema de interrup√ß√µes e perif√©ricos (IVET, INTE, etc.)
 
-		MOV #ISR,IVET	; Inicializa o vetor de interrupÁıes com o endereÁo dos tratadores de interrupÁ„o.
-		MOV #H03,INTE	; Inicializa o byte respons·vel por habilitar as interrupÁıes.
-		MOV #H00,INTS	; Inicializa o byte respons·vel por informar o status das interrupÁıes.
+		MOV #ISR,IVET	; Inicializa o vetor de interrup√ß√µes com o endere√ßo dos tratadores de interrup√ß√£o.
+		MOV #H03,INTE	; Inicializa o byte respons√°vel por habilitar as interrup√ß√µes.
+		MOV #H00,INTS	; Inicializa o byte respons√°vel por informar o status das interrup√ß√µes.
 
-; 4) Inicializar as vari·veis internas do kernel
+; 4) Inicializar as vari√°veis internas do kernel
 
-		CLR Cursor	; Variavel respons·vel por indicar a posiÁ„o de escrita no visor.
-		CLR Count	; Vari·vel respons·vel por auxiliar na operaÁ„o de multiplicaÁ„o.
+		CLR Cursor	; Variavel respons√°vel por indicar a posi√ß√£o de escrita no visor.
+		CLR Count	; Vari√°vel respons√°vel por auxiliar na opera√ß√£o de multiplica√ß√£o.
 
-		CLR Status0	; Vari·vel respons·vel por indicar o status do relÛgio 0 (se est· visÌvel e se est· andando).
-		CLR Min0	; Vari·vel respons·vel por indicar o tempo em minutos do relÛgio 0.
-		CLR Seg0	; Vari·vel respons·vel por indicar o tempo em segundos do relÛgio 0.
+		CLR Status0	; Vari√°vel respons√°vel por indicar o status do rel√≥gio 0 (se est√° vis√≠vel e se est√° andando).
+		CLR Min0	; Vari√°vel respons√°vel por indicar o tempo em minutos do rel√≥gio 0.
+		CLR Seg0	; Vari√°vel respons√°vel por indicar o tempo em segundos do rel√≥gio 0.
 
-		CLR Status1	; Vari·vel respons·vel por indicar o status do relÛgio 1 (se est· visÌvel e se est· andando).
-		CLR Min1	; Vari·vel respons·vel por indicar o tempo em minutos do relÛgio 1.
-		CLR Seg1	; Vari·vel respons·vel por indicar o tempo em segundos do relÛgio 1.
+		CLR Status1	; Vari√°vel respons√°vel por indicar o status do rel√≥gio 1 (se est√° vis√≠vel e se est√° andando).
+		CLR Min1	; Vari√°vel respons√°vel por indicar o tempo em minutos do rel√≥gio 1.
+		CLR Seg1	; Vari√°vel respons√°vel por indicar o tempo em segundos do rel√≥gio 1.
 
-		CLR Tecla	; Vari·vel respons·vel por armazenar o ASCII de uma tecla digitada.
-		CLR TeclaAux	; Vari·vel respons·vel por armazenar o ASCII do caractere da posiÁ„o do cursor no visor.
+		CLR Tecla	; Vari√°vel respons√°vel por armazenar o ASCII de uma tecla digitada.
+		CLR TeclaAux	; Vari√°vel respons√°vel por armazenar o ASCII do caractere da posi√ß√£o do cursor no visor.
 
-		CLR Ciclo	; Vari·vel respons·vel por contabilizar tempo de meio segundo ou de um segundo na rotina de interrupÁ„o do timer.
+		CLR Ciclo	; Vari√°vel respons√°vel por contabilizar tempo de meio segundo ou de um segundo na rotina de interrup√ß√£o do timer.
 	
-		MOV #'0',A_0 	; Vari·vel que representa o primeiro dÌgito do relÛgio 0.
-		MOV #'0',B_0 	; Vari·vel que representa o segundo dÌgito do relÛgio 0.
-		MOV #'0',C_0 	; Vari·vel que representa o terceiro dÌgito do relÛgio 0.
-		MOV #'0',D_0 	; Vari·vel que representa o quarto dÌgito do relÛgio 0.
+		MOV #'0',A_0 	; Vari√°vel que representa o primeiro d√≠gito do rel√≥gio 0.
+		MOV #'0',B_0 	; Vari√°vel que representa o segundo d√≠gito do rel√≥gio 0.
+		MOV #'0',C_0 	; Vari√°vel que representa o terceiro d√≠gito do rel√≥gio 0.
+		MOV #'0',D_0 	; Vari√°vel que representa o quarto d√≠gito do rel√≥gio 0.
 
-		MOV #'0',A_1 	; Vari·vel que representa o primeiro dÌgito do relÛgio 1.
-		MOV #'0',B_1 	; Vari·vel que representa o segundo dÌgito do relÛgio 1.
-		MOV #'0',C_1 	; Vari·vel que representa o terceiro dÌgito do relÛgio 1.
-		MOV #'0',D_1 	; Vari·vel que representa o quarto dÌgito do relÛgio 1.
+		MOV #'0',A_1 	; Vari√°vel que representa o primeiro d√≠gito do rel√≥gio 1.
+		MOV #'0',B_1 	; Vari√°vel que representa o segundo d√≠gito do rel√≥gio 1.
+		MOV #'0',C_1 	; Vari√°vel que representa o terceiro d√≠gito do rel√≥gio 1.
+		MOV #'0',D_1 	; Vari√°vel que representa o quarto d√≠gito do rel√≥gio 1.
 
-; 5) Inicializar o teclado zerando o byte de estado (TECST, endereÁo 65498)
+; 5) Inicializar o teclado zerando o byte de estado (TECST, endere√ßo 65498)
 
-		CLR TECDT 	; Zera o byte que grava a tecla pressionada pelo usu·rio.
+		CLR TECDT 	; Zera o byte que grava a tecla pressionada pelo usu√°rio.
 		CLR TECST 	; Zera o byte de estado do teclado.
 
 ; 6) Inicializar o timer
@@ -140,266 +140,266 @@ _RESET:
 
 		JSR R7,Limpa 	; Apaga todos os caracteres do visor.
 
-; 8) Habilitar interrupÁıes
+; 8) Habilitar interrup√ß√µes
 
-		MOV #H83,INTE 	; Habilita as interrupÁıes.
+		MOV #H83,INTE 	; Habilita as interrup√ß√µes.
 
-; 9) Retornar para o programa de aplicaÁ„o com um desvio para o endereÁo _APP da memÛria
+; 9) Retornar para o programa de aplica√ß√£o com um desvio para o endere√ßo _APP da mem√≥ria
 
-		JMP _APP 	; Direciona a execuÁ„o do programa para a aplicaÁ„o.
+		JMP _APP 	; Direciona a execu√ß√£o do programa para a aplica√ß√£o.
 	
 ;------------------------------------------------------------------------------
-; FunÁ„o atravÈs da qual pode-se solicitar ao kernel a informaÁ„o sobre a existÍncia de tecla digitada.
-; A funÁ„o deve retornar com a informaÁ„o da existÍncia de tecla, sem aguardar pela digitaÁ„o de qualquer tecla. 
-; - Par‚metros de entrada: nenhum. 
-; - Par‚metro de saÌda: registrador R0, com a informaÁ„o da existÍncia de tecla. 
-; A funÁ„o retorna no registrador R0 a informaÁ„o se existe tecla ou n„o. 
-; - Se h· tecla, o valor em R0 ser· zero; 
-; - Se n„o h· tecla, o valor em R0 ser· um valor qualquer diferente de zero. 
+; Fun√ß√£o atrav√©s da qual pode-se solicitar ao kernel a informa√ß√£o sobre a exist√™ncia de tecla digitada.
+; A fun√ß√£o deve retornar com a informa√ß√£o da exist√™ncia de tecla, sem aguardar pela digita√ß√£o de qualquer tecla. 
+; - Par√¢metros de entrada: nenhum. 
+; - Par√¢metro de sa√≠da: registrador R0, com a informa√ß√£o da exist√™ncia de tecla. 
+; A fun√ß√£o retorna no registrador R0 a informa√ß√£o se existe tecla ou n√£o. 
+; - Se h√° tecla, o valor em R0 ser√° zero; 
+; - Se n√£o h√° tecla, o valor em R0 ser√° um valor qualquer diferente de zero. 
 ;------------------------------------------------------------------------------
 
 _kbhit:		CLR R0		; Zera o registrador R0.
-		TST Tecla	; Verifica se h· tecla pressionada.
-		BEQ kbhit_fim	; Se h· tecla pressionada, encerra a funÁ„o.
-		MOV #1,R0	; Retorna 1 em R0, indicando a inexistÍncia de tecla.
-kbhit_fim:	RTS R7		; Retorno da subrotina correspondente ‡ funÁ„o.
+		TST Tecla	; Verifica se h√° tecla pressionada.
+		BEQ kbhit_fim	; Se h√° tecla pressionada, encerra a fun√ß√£o.
+		MOV #1,R0	; Retorna 1 em R0, indicando a inexist√™ncia de tecla.
+kbhit_fim:	RTS R7		; Retorno da subrotina correspondente √† fun√ß√£o.
 				
 ;------------------------------------------------------------------------------
-; FunÁ„o atravÈs da qual pode-se solicitar ao kernel que aguarde pela digitaÁ„o de uma tecla.
-; A funÁ„o deve retornar o cÛdigo ASCII da tecla digitada.
-; Portanto, a funÁ„o deve aguardar pela digitaÁ„o de uma tecla. 
-; - Par‚metros de entrada: nenhum. 
-; - Par‚metro de saÌda: registrador R0, com a tecla digitada. 
-; A funÁ„o sÛ retorna (sÛ termina) quando o usu·rio digitar alguma tecla.
-; O cÛdigo ASCII da tecla digitada deve ser retornado no registrador R0. 
-; Sempre que a funÁ„o ì_getcharî for chamada e estiver bloqueada aguardando por uma tecla,
-;     a posiÁ„o do cursor deve ser apresentado no visor atravÈs do sÌmbolo ì_î (underscore).
-; Esse sÌmbolo deve ser alternado com o caractere que estiver sendo apresentado nessa posiÁ„o.
-; Essa altern‚ncia deve ter uma periodicidade tal que cada sÌmbolo permaneÁa no visor por 500ms. 
+; Fun√ß√£o atrav√©s da qual pode-se solicitar ao kernel que aguarde pela digita√ß√£o de uma tecla.
+; A fun√ß√£o deve retornar o c√≥digo ASCII da tecla digitada.
+; Portanto, a fun√ß√£o deve aguardar pela digita√ß√£o de uma tecla. 
+; - Par√¢metros de entrada: nenhum. 
+; - Par√¢metro de sa√≠da: registrador R0, com a tecla digitada. 
+; A fun√ß√£o s√≥ retorna (s√≥ termina) quando o usu√°rio digitar alguma tecla.
+; O c√≥digo ASCII da tecla digitada deve ser retornado no registrador R0. 
+; Sempre que a fun√ß√£o ‚Äú_getchar‚Äù for chamada e estiver bloqueada aguardando por uma tecla,
+;     a posi√ß√£o do cursor deve ser apresentado no visor atrav√©s do s√≠mbolo ‚Äú_‚Äù (underscore).
+; Esse s√≠mbolo deve ser alternado com o caractere que estiver sendo apresentado nessa posi√ß√£o.
+; Essa altern√¢ncia deve ter uma periodicidade tal que cada s√≠mbolo permane√ßa no visor por 500ms. 
 ;------------------------------------------------------------------------------
 
 _getchar:
 
 testa:		TST Tecla	; Testa se foi pressionada uma tecla.
-		BEQ testa   	; Enquanto uma tecla n„o È digitada, continua o teste.	
+		BEQ testa   	; Enquanto uma tecla n√£o √© digitada, continua o teste.	
 		MOV Tecla,R0	; Retorna a tecla digitada em R0.
-		CLR Tecla	; Limpa a vari·vel respons·vel por armazenar a tecla.
-		RTS R7		; Retorno da subrotina correspondente ‡ funÁ„o.
+		CLR Tecla	; Limpa a vari√°vel respons√°vel por armazenar a tecla.
+		RTS R7		; Retorno da subrotina correspondente √† fun√ß√£o.
 
 ;------------------------------------------------------------------------------
 ; Envia um caractere ASCII para o visor.
-; Esse caractere pode ser um caractere visÌvel ou um caractere de controle. 
-; - Par‚metros de entrada: registrador R5, com o caractere a ser colocado no visor. 
-; - Par‚metro de saÌda: registrador R0, com o cÛdigo de erro de retorno. 
-; O cÛdigo no registrador R5 pode representar caracteres visÌveis ou caracteres de controle. 
-; Na inicializaÁ„o do kernel, o visor deve ser limpo (apagado) e o cursor deve ser posicionado no inÌcio do visor. 
-; A funÁ„o retorna no registrador R0 um cÛdigo de erro. 
-; - Se n„o houve erro, o valor em R0 ser· zero; 
-; - Se houve algum erro ou informaÁ„o inv·lida de entrada, o valor em R0 ser· um valor qualquer diferente de zero. 
+; Esse caractere pode ser um caractere vis√≠vel ou um caractere de controle. 
+; - Par√¢metros de entrada: registrador R5, com o caractere a ser colocado no visor. 
+; - Par√¢metro de sa√≠da: registrador R0, com o c√≥digo de erro de retorno. 
+; O c√≥digo no registrador R5 pode representar caracteres vis√≠veis ou caracteres de controle. 
+; Na inicializa√ß√£o do kernel, o visor deve ser limpo (apagado) e o cursor deve ser posicionado no in√≠cio do visor. 
+; A fun√ß√£o retorna no registrador R0 um c√≥digo de erro. 
+; - Se n√£o houve erro, o valor em R0 ser√° zero; 
+; - Se houve algum erro ou informa√ß√£o inv√°lida de entrada, o valor em R0 ser√° um valor qualquer diferente de zero. 
 ;------------------------------------------------------------------------------
 
 _putchar:	CMP R5,#H08
-		BEQ BackSpace	; Testa se o cursor dever· ser movido uma posiÁ„o para a esquerda do visor (backspace, BS).
+		BEQ BackSpace	; Testa se o cursor dever√° ser movido uma posi√ß√£o para a esquerda do visor (backspace, BS).
 		CMP R5,#H0D
-		BEQ ReturnC     ; Testa se o cursor dever· ser movido para a primeira posiÁ„o ‡ esquerda do visor (carriage return, CR).
+		BEQ ReturnC     ; Testa se o cursor dever√° ser movido para a primeira posi√ß√£o √† esquerda do visor (carriage return, CR).
 
 		CMP R5,#H20
-		BLT Invalido	; Testa se o valor de R5 est· abaixo do limite inferior de caracteres.
+		BLT Invalido	; Testa se o valor de R5 est√° abaixo do limite inferior de caracteres.
 		CMP R5,#H7A
-		BGT Invalido	; Testa se o valor de R5 est· acima do limite superior de caracteres.
+		BGT Invalido	; Testa se o valor de R5 est√° acima do limite superior de caracteres.
 
 		MOV #VISOR,R3
-		ADD Cursor,R3	; Coloca o prÛximo valor a ser escrito no visor em R3.
-		MOV R5,(R3)	; Move o caractere recebido em R5 para a posiÁ„o do visor, que È indicada pelo cursor.
+		ADD Cursor,R3	; Coloca o pr√≥ximo valor a ser escrito no visor em R3.
+		MOV R5,(R3)	; Move o caractere recebido em R5 para a posi√ß√£o do visor, que √© indicada pelo cursor.
 		CMP Cursor,#21
 		BGE Fim
 		INC Cursor	; Incrementa o cursor em uma unidade.
-Fim:		CLR R0		; Coloca o valor 0 no registrador R0, indicando que n„o houve erro.
+Fim:		CLR R0		; Coloca o valor 0 no registrador R0, indicando que n√£o houve erro.
 		RTS R7
 		
 Invalido:	MOV #1,R0	; Coloca o valor 1 no registrador R0, indicando erro.
-		RTS R7		; Retorno da subrotina correspondente ‡ funÁ„o.
+		RTS R7		; Retorno da subrotina correspondente √† fun√ß√£o.
 
-BackSpace:	CMP Cursor,#0	; Testa se o cursor est· na ˙ltima posiÁ„o do visor.
+BackSpace:	CMP Cursor,#0	; Testa se o cursor est√° na √∫ltima posi√ß√£o do visor.
 		BEQ Fim
 		DEC Cursor	; Decrementa o valor do cursor em uma unidade.
 		JMP Fim
 
-ReturnC:	MOV #0,Cursor	; Move o cursor para o inÌcio do visor.
+ReturnC:	MOV #0,Cursor	; Move o cursor para o in√≠cio do visor.
 		JMP Fim
 
 ;------------------------------------------------------------------------------
-; Essa funÁ„o fornece as informaÁıes relativas ‡ situaÁ„o atual de cada relÛgio, 
-; no que diz respeito ‡ sua visibilidade e se est· andando. 
-; - Par‚metros de entrada: registrador R5, com o identificador do relÛgio a ser lido.
+; Essa fun√ß√£o fornece as informa√ß√µes relativas √† situa√ß√£o atual de cada rel√≥gio, 
+; no que diz respeito √† sua visibilidade e se est√° andando. 
+; - Par√¢metros de entrada: registrador R5, com o identificador do rel√≥gio a ser lido.
 ;   Esse valor pode ser 0 (zero) ou 1 (um). 
 ; Outros valores devem ser ignorados. 
-; - Par‚metro de saÌda: registrador R0, com a indicaÁ„o do estado do relÛgio (visibilidade e se est· parado). 
-; No retorno da funÁ„o, o registrador R0 conter· as informaÁıes do estado do relÛgio em seus bits 0 e bit 1. 
-; O bit 0, quando ligado (valor ì1î), indica que o relÛgio est· visÌvel;
-; O bit 1, quando ligado (valor ì1î), indica que o relÛgio est· andando. 
+; - Par√¢metro de sa√≠da: registrador R0, com a indica√ß√£o do estado do rel√≥gio (visibilidade e se est√° parado). 
+; No retorno da fun√ß√£o, o registrador R0 conter√° as informa√ß√µes do estado do rel√≥gio em seus bits 0 e bit 1. 
+; O bit 0, quando ligado (valor ‚Äú1‚Äù), indica que o rel√≥gio est√° vis√≠vel;
+; O bit 1, quando ligado (valor ‚Äú1‚Äù), indica que o rel√≥gio est√° andando. 
 ;------------------------------------------------------------------------------
 
-_get_clock_status:	CMP R5,#0 	; Verifica se o relÛgio 0 est· sendo analisado.
+_get_clock_status:	CMP R5,#0 	; Verifica se o rel√≥gio 0 est√° sendo analisado.
 			BEQ Aux1
-			CMP R5,#1 	; Verifica se o relÛgio 1 est· sendo analisado.
+			CMP R5,#1 	; Verifica se o rel√≥gio 1 est√° sendo analisado.
 			BEQ Aux2
 			MOV #65535,R0 	; Retorna 65535 em R0, indicando que houve erro.
-			RTS R7		; Retorno da subrotina correspondente ‡ funÁ„o.
+			RTS R7		; Retorno da subrotina correspondente √† fun√ß√£o.
 
-Aux1:			MOV Status0, R0 ; Retorna o status do relÛgio 0 em R0.
-			RTS R7		; Retorno da subrotina correspondente ‡ funÁ„o.
+Aux1:			MOV Status0, R0 ; Retorna o status do rel√≥gio 0 em R0.
+			RTS R7		; Retorno da subrotina correspondente √† fun√ß√£o.
 
-Aux2:			MOV Status1, R0 ; Retorna o status do relÛgio 1 em R0.
-			RTS R7		; Retorno da subrotina correspondente ‡ funÁ„o.
+Aux2:			MOV Status1, R0 ; Retorna o status do rel√≥gio 1 em R0.
+			RTS R7		; Retorno da subrotina correspondente √† fun√ß√£o.
 	
 ;------------------------------------------------------------------------------
-; Essa funÁ„o fornece o valor atual de cada relÛgio.
-; Essa informaÁ„o È fornecida como um n˙mero inteiro de segundos.
-; Como cada relÛgio tem minutos e segundos,
-;     o valor fornecido dever· ser o resultado da aplicaÁ„o da seguinte fÛrula (60*MIN+SEG). 
-; - Par‚metros de entrada: registrador R5, com o identificador do relÛgio a ser lido.
+; Essa fun√ß√£o fornece o valor atual de cada rel√≥gio.
+; Essa informa√ß√£o √© fornecida como um n√∫mero inteiro de segundos.
+; Como cada rel√≥gio tem minutos e segundos,
+;     o valor fornecido dever√° ser o resultado da aplica√ß√£o da seguinte f√≥rula (60*MIN+SEG). 
+; - Par√¢metros de entrada: registrador R5, com o identificador do rel√≥gio a ser lido.
 ;   Esse valor pode ser 0 (zero) ou 1 (um). Outros valores devem ser ignorados. 
-; - Par‚metro de saÌda: registrador R0, com o n˙mero de segundos atualmente presentes no relÛgio. 
-; No retorno da funÁ„o, o registrador R0 conter· o n˙mero de segundos correspondentes ‡ informaÁ„o atual no relÛgio.
-; Essa informaÁ„o corresponde ‡quela presente no relÛgio, independentemente de seu estado (visÌvel/invisÌvel ou parado/andando). 
+; - Par√¢metro de sa√≠da: registrador R0, com o n√∫mero de segundos atualmente presentes no rel√≥gio. 
+; No retorno da fun√ß√£o, o registrador R0 conter√° o n√∫mero de segundos correspondentes √† informa√ß√£o atual no rel√≥gio.
+; Essa informa√ß√£o corresponde √†quela presente no rel√≥gio, independentemente de seu estado (vis√≠vel/invis√≠vel ou parado/andando). 
 ;------------------------------------------------------------------------------
 
 _get_clock_time:	CLR R0		; Zera o valor do registrador R0.
-			CLR Count	; Zera a vari·vel respons·vel por contar laÁos de somas.
-			CMP R5,#0	; Analisa se o tempo do relÛgio 0 ser· retornado.
-			BEQ Vezes60zero ; Retorna o tempo do relÛgio 0.
-			CMP R5,#1	; Analisa se o tempo do relÛgio 0 ser· retornado.
-			BEQ Vezes60um 	; Retorna o tempo do relÛgio 1.
+			CLR Count	; Zera a vari√°vel respons√°vel por contar la√ßos de somas.
+			CMP R5,#0	; Analisa se o tempo do rel√≥gio 0 ser√° retornado.
+			BEQ Vezes60zero ; Retorna o tempo do rel√≥gio 0.
+			CMP R5,#1	; Analisa se o tempo do rel√≥gio 0 ser√° retornado.
+			BEQ Vezes60um 	; Retorna o tempo do rel√≥gio 1.
 			MOV #65535,R0	; Retorna 65535 em R0, indicando que houve erro.
 			JMP Fim2
 
 Vezes60zero:		ADD #60,R0	; Adiciona 60 em R0 sucessivas vezes.
 			INC Count	; Incrementa o contador.
-			CMP Count,Min0	; Verifica se o laÁo chegou ao fim.
-			BEQ AdcSeg0	; Adiciona o tempo em segundos do relÛgio 0.
-			JMP Vezes60Zero ; Repete a operaÁ„o.
+			CMP Count,Min0	; Verifica se o la√ßo chegou ao fim.
+			BEQ AdcSeg0	; Adiciona o tempo em segundos do rel√≥gio 0.
+			JMP Vezes60Zero ; Repete a opera√ß√£o.
 
-AdcSeg0:		ADD Seg0,R0	; Adiciona o tempo em segundos do relÛgio 1.
-			JMP Arruma0	; Subtrai o tempo do relÛgio 0 em uma unidade, se necess·rio.
+AdcSeg0:		ADD Seg0,R0	; Adiciona o tempo em segundos do rel√≥gio 1.
+			JMP Arruma0	; Subtrai o tempo do rel√≥gio 0 em uma unidade, se necess√°rio.
 
 Vezes60um:		ADD #60,R0	; Adiciona 60 em R0 sucessivas vezes.
 			INC Count	; Incrementa o contador.
-			CMP Count,Min1	; Verifica se o laÁo chegou ao fim.
-			BEQ AdcSeg1	; Adiciona o tempo em segundos do relÛgio 1.
-			JMP Vezes60um	; Repete a operaÁ„o.
+			CMP Count,Min1	; Verifica se o la√ßo chegou ao fim.
+			BEQ AdcSeg1	; Adiciona o tempo em segundos do rel√≥gio 1.
+			JMP Vezes60um	; Repete a opera√ß√£o.
 
-AdcSeg1:		ADD Seg1,R0	; Adiciona o tempo em segundos do relÛgio 1.
-			JMP Arruma1	; Subtrai o tempo do relÛgio 1 em uma unidade, se necess·rio.
+AdcSeg1:		ADD Seg1,R0	; Adiciona o tempo em segundos do rel√≥gio 1.
+			JMP Arruma1	; Subtrai o tempo do rel√≥gio 1 em uma unidade, se necess√°rio.
 
-Arruma0:		CMP Status0,#2 	; Verifica se o relÛgio 0 est· andando.
+Arruma0:		CMP Status0,#2 	; Verifica se o rel√≥gio 0 est√° andando.
 			BEQ Aux3
-			CMP Status0,#3	; Verifica se o relÛgio 0 est· andando.
+			CMP Status0,#3	; Verifica se o rel√≥gio 0 est√° andando.
 			BEQ Aux3
 			JMP Fim2
 
-Aux3:			DEC R0		; Subtrai o tempo do relÛgio 0 em uma unidade.
+Aux3:			DEC R0		; Subtrai o tempo do rel√≥gio 0 em uma unidade.
 			JMP Fim2
 
-Arruma1:		CMP Status1,#2 	; Verifica se o relÛgio 1 est· andando.
+Arruma1:		CMP Status1,#2 	; Verifica se o rel√≥gio 1 est√° andando.
 			BEQ Aux4
-			CMP Status1,#3 	; Verifica se o relÛgio 1 est· andando.
+			CMP Status1,#3 	; Verifica se o rel√≥gio 1 est√° andando.
 			BEQ Aux4
 			JMP Fim2
 
-Aux4:			DEC R0		; Subtrai o tempo do relÛgio 1 em uma unidade,
+Aux4:			DEC R0		; Subtrai o tempo do rel√≥gio 1 em uma unidade,
 			JMP Fim2
 
-Fim2:			RTS R7		; Retorno da subrotina correspondente ‡ funÁ„o.
+Fim2:			RTS R7		; Retorno da subrotina correspondente √† fun√ß√£o.
 				
 ;------------------------------------------------------------------------------
-; Essa funÁ„o È usada para indicar ao kernel se o relÛgio deve ìandarî ou ìpararî.  
-; - Par‚metros de entrada: 
-;   - registrador R5, com o identificador do relÛgio a ser ativado/desativado.
+; Essa fun√ß√£o √© usada para indicar ao kernel se o rel√≥gio deve ‚Äúandar‚Äù ou ‚Äúparar‚Äù.  
+; - Par√¢metros de entrada: 
+;   - registrador R5, com o identificador do rel√≥gio a ser ativado/desativado.
 ;     Esse valor pode ser 0 (zero) ou 1 (um). Outros valores devem ser ignorados; 
-;   - registrador R4, com a indicaÁ„o do estado a ser colocado o relÛgio.
-;     Esse valor pode ser 0 (zero), caso o relÛgio deva parar,
-;     ou um valor diferente de 0 (zero), caso o relÛgio deva andar. 
-; - Par‚metro de saÌda: registrador R0, com o cÛdigo de erro de retorno. 
-; A funÁ„o retorna no registrador R0 um cÛdigo de erro. 
-; - Se n„o houve erro, o valor em R0 ser· zero; 
-; - Se houve algum erro ou informaÁ„o inv·lida de entrada,
-;   o valor em R0 ser· um valor qualquer diferente de zero. 
+;   - registrador R4, com a indica√ß√£o do estado a ser colocado o rel√≥gio.
+;     Esse valor pode ser 0 (zero), caso o rel√≥gio deva parar,
+;     ou um valor diferente de 0 (zero), caso o rel√≥gio deva andar. 
+; - Par√¢metro de sa√≠da: registrador R0, com o c√≥digo de erro de retorno. 
+; A fun√ß√£o retorna no registrador R0 um c√≥digo de erro. 
+; - Se n√£o houve erro, o valor em R0 ser√° zero; 
+; - Se houve algum erro ou informa√ß√£o inv√°lida de entrada,
+;   o valor em R0 ser√° um valor qualquer diferente de zero. 
 ;------------------------------------------------------------------------------
 
-_turnon_clock:		CMP R5,#0	 ; Analisa se o relÛgio a ser alterado È o relÛgio 0.
+_turnon_clock:		CMP R5,#0	 ; Analisa se o rel√≥gio a ser alterado √© o rel√≥gio 0.
 			BEQ Analisa0
-			CMP R5,#1	 ; Analisa se o relÛgio a ser alterado È o relÛgio 1.
+			CMP R5,#1	 ; Analisa se o rel√≥gio a ser alterado √© o rel√≥gio 1.
 			BEQ Analisa1
 			JMP FimRuim	 ; Retorna 1 em R0, indicando que houve erro.
 
 Analisa0:		CMP R4,#0
 			BEQ Para0
-			OR  #2,Status0	 ; Muda o estado do funcionamento do relÛgio 0 para ON (ligado).
-			JMP FimBom	 ; Retorna 0 em R0, indicando que n„o houve erro.
+			OR  #2,Status0	 ; Muda o estado do funcionamento do rel√≥gio 0 para ON (ligado).
+			JMP FimBom	 ; Retorna 0 em R0, indicando que n√£o houve erro.
 
-Para0:			AND #253,Status0 ; Muda o estado do funcionamento do relÛgio 0 para OFF (desligado).
-			JMP FimBom	 ; Retorna 0 em R0, indicando que n„o houve erro.
+Para0:			AND #253,Status0 ; Muda o estado do funcionamento do rel√≥gio 0 para OFF (desligado).
+			JMP FimBom	 ; Retorna 0 em R0, indicando que n√£o houve erro.
 
 Analisa1:		CMP R4,#0
 			BEQ Para1
-			OR  #2,Status1 	 ; Muda o estado do funcionamento do relÛgio 1 para ON (ligado).
-			JMP FimBom	 ; Retorna 0 em R0, indicando que n„o houve erro.
+			OR  #2,Status1 	 ; Muda o estado do funcionamento do rel√≥gio 1 para ON (ligado).
+			JMP FimBom	 ; Retorna 0 em R0, indicando que n√£o houve erro.
 
-Para1:			AND #253,Status1 ; Muda o estado do funcionamento do relÛgio 1 para OFF (desligado).
-			JMP FimBom	 ; Retorna 0 em R0, indicando que n„o houve erro.
+Para1:			AND #253,Status1 ; Muda o estado do funcionamento do rel√≥gio 1 para OFF (desligado).
+			JMP FimBom	 ; Retorna 0 em R0, indicando que n√£o houve erro.
 
 
-FimBom:			MOV #0,R0	 ; Retorna 0 em R0, indicando que n„o houve erro.
-			RTS R7		 ; Retorno da subrotina correspondente ‡ funÁ„o.
+FimBom:			MOV #0,R0	 ; Retorna 0 em R0, indicando que n√£o houve erro.
+			RTS R7		 ; Retorno da subrotina correspondente √† fun√ß√£o.
 
 
 FimRuim:		MOV #1,R0	 ; Retorna 1 em R0, indicando que houve erro.
-			RTS R7		 ; Retorno da subrotina correspondente ‡ funÁ„o.
+			RTS R7		 ; Retorno da subrotina correspondente √† fun√ß√£o.
 
 ;------------------------------------------------------------------------------
-; Essa funÁ„o È usada para indicar ao kernel que o relÛgio deve ser zerado.
-; Ou seja, minutos e horas armazenado no relÛgio devem ser zerados. 
-; - Par‚metros de entrada: registrador R5, com o identificador do relÛgio a ser zerado.
+; Essa fun√ß√£o √© usada para indicar ao kernel que o rel√≥gio deve ser zerado.
+; Ou seja, minutos e horas armazenado no rel√≥gio devem ser zerados. 
+; - Par√¢metros de entrada: registrador R5, com o identificador do rel√≥gio a ser zerado.
 ;   Esse valor pode ser 0 (zero) ou  1 (um). Outros valores devem ser ignorados; 
-; - Par‚metro de saÌda: registrador R0, com o cÛdigo de erro de retorno. 
-; A funÁ„o retorna no registrador R0 um cÛdigo de erro. 
-; - Se n„o houve erro, o valor em R0 ser· zero; 
-; - Se houve algum erro ou informaÁ„o inv·lida de entrada,
-;          o valor em R0 ser· um valor qualquer diferente de zero. 
+; - Par√¢metro de sa√≠da: registrador R0, com o c√≥digo de erro de retorno. 
+; A fun√ß√£o retorna no registrador R0 um c√≥digo de erro. 
+; - Se n√£o houve erro, o valor em R0 ser√° zero; 
+; - Se houve algum erro ou informa√ß√£o inv√°lida de entrada,
+;          o valor em R0 ser√° um valor qualquer diferente de zero. 
 ;------------------------------------------------------------------------------
 
-_clr_clock:		CMP R5,#0	; Verifica se o relÛgio 0 dever· ser zerado.
-			BEQ Fim4	; Zera todo o relÛgio 0.
-			CMP R5,#1 	; Verifica se o relÛgio 1 dever· ser zerado.
-			BEQ Fim5	; Zera todo o relÛgio 1.
+_clr_clock:		CMP R5,#0	; Verifica se o rel√≥gio 0 dever√° ser zerado.
+			BEQ Fim4	; Zera todo o rel√≥gio 0.
+			CMP R5,#1 	; Verifica se o rel√≥gio 1 dever√° ser zerado.
+			BEQ Fim5	; Zera todo o rel√≥gio 1.
 			JMP Fim3	; Move 65535 para R0, indicando que houve erro.
 
 Fim3:			MOV #65535,R0	; Move 65535 para R0, indicando que houve erro.
-			RTS R7		; Retorno da subrotina correspondente ‡ funÁ„o.
+			RTS R7		; Retorno da subrotina correspondente √† fun√ß√£o.
 
-Fim4:			CLR Min0	; Zera a quantidade de minutos do relÛgio 0.
-			CLR Seg0 	; Zera a quantidade de segundos do relÛgio 0.
-			MOV #'0',A_0	; Zera o primeiro dÌgito do relÛgio 0.
-			MOV #'0',B_0	; Zera o segundo dÌgito do relÛgio 0.
-			MOV #'0',C_0	; Zera o terceiro dÌgito do relÛgio 0.
-			MOV #'0',D_0	; Zera o quarto dÌgito do relÛgio 0.
-			JMP Fim6	; Move 0 para R0, indicando que n„o houve erro.
+Fim4:			CLR Min0	; Zera a quantidade de minutos do rel√≥gio 0.
+			CLR Seg0 	; Zera a quantidade de segundos do rel√≥gio 0.
+			MOV #'0',A_0	; Zera o primeiro d√≠gito do rel√≥gio 0.
+			MOV #'0',B_0	; Zera o segundo d√≠gito do rel√≥gio 0.
+			MOV #'0',C_0	; Zera o terceiro d√≠gito do rel√≥gio 0.
+			MOV #'0',D_0	; Zera o quarto d√≠gito do rel√≥gio 0.
+			JMP Fim6	; Move 0 para R0, indicando que n√£o houve erro.
 
-Fim5:			CLR Min1 	; Zera a quantidade de minutos do relÛgio 1.
-			CLR Seg1 	; Zera a quantidade de segundos do relÛgio 1.
-			MOV #'0',A_1	; Zera o primeiro dÌgito do relÛgio 1.
-			MOV #'0',B_1 	; Zera o segundo dÌgito do relÛgio 1.
-			MOV #'0',C_1	; Zera o terceiro dÌgito do relÛgio 1.
-			MOV #'0',D_1	; Zera o quarto dÌgito do relÛgio 1.
-			JMP Fim6	; Move 0 para R0, indicando que n„o houve erro.
+Fim5:			CLR Min1 	; Zera a quantidade de minutos do rel√≥gio 1.
+			CLR Seg1 	; Zera a quantidade de segundos do rel√≥gio 1.
+			MOV #'0',A_1	; Zera o primeiro d√≠gito do rel√≥gio 1.
+			MOV #'0',B_1 	; Zera o segundo d√≠gito do rel√≥gio 1.
+			MOV #'0',C_1	; Zera o terceiro d√≠gito do rel√≥gio 1.
+			MOV #'0',D_1	; Zera o quarto d√≠gito do rel√≥gio 1.
+			JMP Fim6	; Move 0 para R0, indicando que n√£o houve erro.
 
-Fim6:			MOV #0,R0 	; Move 0 para R0, indicando que n„o houve erro.
-			RTS R7		; Retorno da subrotina correspondente ‡ funÁ„o.				
+Fim6:			MOV #0,R0 	; Move 0 para R0, indicando que n√£o houve erro.
+			RTS R7		; Retorno da subrotina correspondente √† fun√ß√£o.				
 
 ;------------------------------------------------------------------------------
 
-; FunÁ„o para limpar o visor.
+; Fun√ß√£o para limpar o visor.
 
 Limpa:
 		MOV		R0,-(R6)
@@ -415,45 +415,45 @@ LimpaAux:
 		MOV		(R6)+,R0
 		RTS		R7
 
-; Tratamento das interrupÁıes:
+; Tratamento das interrup√ß√µes:
 
 ISR:
-		MOV		R0,-(R6)	; Salva os conte˙dos de todos os seis primeiros registradores na pilha.
+		MOV		R0,-(R6)	; Salva os conte√∫dos de todos os seis primeiros registradores na pilha.
 		MOV		R1,-(R6)
 		MOV		R2,-(R6)
 		MOV		R3,-(R6)
 		MOV		R4,-(R6)
 		MOV		R5,-(R6)
 
-		MOV		INTS,R0		; Verifica se È uma interrupÁ„o de teclado.
+		MOV		INTS,R0		; Verifica se √© uma interrup√ß√£o de teclado.
 		AND		#2,R0
-		BEQ		ISR2		; Tratamento da interrupÁ„o do timer.
-		JSR		R7,ISRtec	; Tratamento da interrupÁ„o do teclado.
-		AND		#HFFFD,INTS	; Desliga o bit de interrupÁ„o de teclado.
-		JMP		ISR3		; Vai para o fim da rotina de interrupÁıes.
+		BEQ		ISR2		; Tratamento da interrup√ß√£o do timer.
+		JSR		R7,ISRtec	; Tratamento da interrup√ß√£o do teclado.
+		AND		#HFFFD,INTS	; Desliga o bit de interrup√ß√£o de teclado.
+		JMP		ISR3		; Vai para o fim da rotina de interrup√ß√µes.
 
-ISR2:		JSR		R7,ISRtim	; Tratamento da interrupÁ„o do timer.
-		AND		#HFFFE,INTS	; Desliga o bit de interrupÁ„o de timer.
-		JMP		ISR3		; Vai para o fim da rotina de interrupÁıes.
+ISR2:		JSR		R7,ISRtim	; Tratamento da interrup√ß√£o do timer.
+		AND		#HFFFE,INTS	; Desliga o bit de interrup√ß√£o de timer.
+		JMP		ISR3		; Vai para o fim da rotina de interrup√ß√µes.
 
-ShowClocks:	CMP		Status0,#1	; Verifica se o relÛgio 0 est· andando.
-		BEQ		Show0		; Coloca todos os dÌgitos do relÛgio 0 no visor.
-		CMP		Status0,#3	; Verifica se o relÛgio 0 est· andando.
-		BEQ		Show0		; Coloca todos os dÌgitos do relÛgio 0 no visor.
-Continue3:	CMP		Status1,#1	; Verifica se o relÛgio 1 est· andando.
-		BEQ		Show1		; Coloca todos os dÌgitos do relÛgio 1 no visor.
-		CMP		Status1,#3	; Verifica se o relÛgio 1 est· andando.
-		BEQ		Show1		; Coloca todos os dÌgitos do relÛgio 1 no visor.
+ShowClocks:	CMP		Status0,#1	; Verifica se o rel√≥gio 0 est√° andando.
+		BEQ		Show0		; Coloca todos os d√≠gitos do rel√≥gio 0 no visor.
+		CMP		Status0,#3	; Verifica se o rel√≥gio 0 est√° andando.
+		BEQ		Show0		; Coloca todos os d√≠gitos do rel√≥gio 0 no visor.
+Continue3:	CMP		Status1,#1	; Verifica se o rel√≥gio 1 est√° andando.
+		BEQ		Show1		; Coloca todos os d√≠gitos do rel√≥gio 1 no visor.
+		CMP		Status1,#3	; Verifica se o rel√≥gio 1 est√° andando.
+		BEQ		Show1		; Coloca todos os d√≠gitos do rel√≥gio 1 no visor.
 		JMP		Continue4
 
-Show0:		MOV		A_0,65524	; Coloca todos os dÌgitos do relÛgio 0 no visor.
+Show0:		MOV		A_0,65524	; Coloca todos os d√≠gitos do rel√≥gio 0 no visor.
 		MOV		B_0,65525
 		MOV		#':',65526
 		MOV		C_0,65527
 		MOV		D_0,65528
 		JMP		Continue3
 
-Show1:		MOV		A_1,65531	; Coloca todos os dÌgitos do relÛgio 1 no visor.
+Show1:		MOV		A_1,65531	; Coloca todos os d√≠gitos do rel√≥gio 1 no visor.
 		MOV		B_1,65532
 		MOV		#':',65533
 		MOV		C_1,65534
@@ -461,37 +461,37 @@ Show1:		MOV		A_1,65531	; Coloca todos os dÌgitos do relÛgio 1 no visor.
 		JMP		Continue4
 
 ISRtim:
-		INC		Ciclo		; Incrementa a vari·vel de tempo em uma unidade.
+		INC		Ciclo		; Incrementa a vari√°vel de tempo em uma unidade.
 		CMP		#5,Ciclo
 		BEQ		Pisca		; Faz o underscore piscar a cada meio segundo.
 		CMP		#10,Ciclo
 		BEQ		Pisca		; Faz o underscore piscar a cada meio segundo.
-		BNE		ISRtim_fim	; Encerra a rotina de interrupÁ„o, pois ainda n„o passou um segundo.
-Continue:	CLR 		Ciclo		; Reseta a vari·vel ciclo.
-		JMP		ShowClocks  	; Mostra todos os relÛgios em tempo real no visor.
-Continue4:	CMP		Status0,#2	; Verifica se o bit "andando" do relÛgio 0 est· ativado.
-		BEQ		Atualiza0	; Atualiza o tempo do relÛgio 0.
-		CMP		Status0,#3	; Verifica se o bit "andando" do relÛgio 0 est· ativado.
-		BEQ 		Atualiza0	; Atualiza o tempo do relÛgio 0.
-Continue5:	CMP		Status1,#2	; Verifica se o bit "andando" do relÛgio 1 est· ativado.
-		BEQ		Atualiza1	; Atualiza o tempo do relÛgio 1.
-		CMP		Status1,#3	; Verifica se o bit "andando" do relÛgio 1 est· ativado.
-		BEQ 		Atualiza1	; Atualiza o tempo do relÛgio 1.
-ISRtim_Fim:	RTS		R7		; Retorno da subrotina correspondente ‡ funÁ„o.
+		BNE		ISRtim_fim	; Encerra a rotina de interrup√ß√£o, pois ainda n√£o passou um segundo.
+Continue:	CLR 		Ciclo		; Reseta a vari√°vel ciclo.
+		JMP		ShowClocks  	; Mostra todos os rel√≥gios em tempo real no visor.
+Continue4:	CMP		Status0,#2	; Verifica se o bit "andando" do rel√≥gio 0 est√° ativado.
+		BEQ		Atualiza0	; Atualiza o tempo do rel√≥gio 0.
+		CMP		Status0,#3	; Verifica se o bit "andando" do rel√≥gio 0 est√° ativado.
+		BEQ 		Atualiza0	; Atualiza o tempo do rel√≥gio 0.
+Continue5:	CMP		Status1,#2	; Verifica se o bit "andando" do rel√≥gio 1 est√° ativado.
+		BEQ		Atualiza1	; Atualiza o tempo do rel√≥gio 1.
+		CMP		Status1,#3	; Verifica se o bit "andando" do rel√≥gio 1 est√° ativado.
+		BEQ 		Atualiza1	; Atualiza o tempo do rel√≥gio 1.
+ISRtim_Fim:	RTS		R7		; Retorno da subrotina correspondente √† fun√ß√£o.
 
 Pisca:		MOV		Cursor,R1
 		ADD		#65500,R1
-		CMP 		(R1),#95	; Verifica se o caractere underscore est· no visor.
+		CMP 		(R1),#95	; Verifica se o caractere underscore est√° no visor.
 		BEQ		PiscaAux1
-		MOV		(R1),TeclaAux	; Armazena o ASCII do caractere da posiÁ„o do cursor no visor na vari·vel auxiliar.
+		MOV		(R1),TeclaAux	; Armazena o ASCII do caractere da posi√ß√£o do cursor no visor na vari√°vel auxiliar.
 		JMP 		PiscaAux2
 
-PiscaAux1:	MOV 		TeclaAux,(R1)	; Coloca o caractere do visor na sua posiÁ„o, no lugar do underscore.
+PiscaAux1:	MOV 		TeclaAux,(R1)	; Coloca o caractere do visor na sua posi√ß√£o, no lugar do underscore.
 		CMP		#10,Ciclo
 		BEQ		Continue
 		JMP 		ISRtim_fim
 
-PiscaAux2:	MOV 		#95,(R1)	; Coloca o underscore do visor na sua posiÁ„o, no lugar do caractere.
+PiscaAux2:	MOV 		#95,(R1)	; Coloca o underscore do visor na sua posi√ß√£o, no lugar do caractere.
 		CMP		#10,Ciclo
 		BEQ		Continue
 		JMP 		ISRtim_fim
@@ -499,176 +499,167 @@ PiscaAux2:	MOV 		#95,(R1)	; Coloca o underscore do visor na sua posiÁ„o, no luga
 Atualiza0:	INC		D_0
 		INC		Seg0
 		CMP		D_0,#58
-		BEQ		OF_D0		; Vai para o tratamento de overflow do quarto dÌgito do relÛgio 0.
+		BEQ		OF_D0		; Vai para o tratamento de overflow do quarto d√≠gito do rel√≥gio 0.
 		JMP		Continue5
 
 Atualiza1:	INC		D_1
 		INC		Seg1
 		CMP		D_1,#58
-		BEQ		OF_D1		; Vai para o tratamento de overflow do quarto dÌgito do relÛgio 1.
+		BEQ		OF_D1		; Vai para o tratamento de overflow do quarto d√≠gito do rel√≥gio 1.
 		JMP		ISRtim_Fim
 
-OF_D0:		MOV		#'0',D_0 	; Tratamento de overflow do quarto dÌgito do relÛgio 0.
+OF_D0:		MOV		#'0',D_0 	; Tratamento de overflow do quarto d√≠gito do rel√≥gio 0.
 		INC		C_0
 		CMP		C_0,#'6'
-		BEQ		OF_C0		; Vai para o tratamento de overflow do terceiro dÌgito do relÛgio 0.
+		BEQ		OF_C0		; Vai para o tratamento de overflow do terceiro d√≠gito do rel√≥gio 0.
 		JMP		Continue5
 
-OF_C0:		MOV		#'0',C_0	; Tratamento de overflow do terceiro dÌgito do relÛgio 0.
+OF_C0:		MOV		#'0',C_0	; Tratamento de overflow do terceiro d√≠gito do rel√≥gio 0.
 		CLR		Seg0
 		INC		B_0
 		INC		Min0
 		CMP		B_0,#58
-		BEQ 		OF_B0		; Vai para o tratamento de overflow do segundo dÌgito do relÛgio 0.
+		BEQ 		OF_B0		; Vai para o tratamento de overflow do segundo d√≠gito do rel√≥gio 0.
 		JMP 		Continue5
 
-OF_B0:		MOV		#'0',B_0	; Tratamento de overflow do segundo dÌgito do relÛgio 0.
+OF_B0:		MOV		#'0',B_0	; Tratamento de overflow do segundo d√≠gito do rel√≥gio 0.
 		INC		A_0
 		CMP		A_0,#'6'
-		BEQ		OF_A0		; Vai para o zeramento de todos dÌgitos do relÛgio 0, pois foi atingida uma hora.
+		BEQ		OF_A0		; Vai para o zeramento de todos d√≠gitos do rel√≥gio 0, pois foi atingida uma hora.
 		JMP 		Continue5
 
-OF_A0:		MOV 		#'0',A_0	; Zeramento de todos os dÌgitos do relÛgio 0, depois que o relÛgio 0 atinge uma hora.
+OF_A0:		MOV 		#'0',A_0	; Zeramento de todos os d√≠gitos do rel√≥gio 0, depois que o rel√≥gio 0 atinge uma hora.
 		MOV 		#'0',B_0
 		MOV 		#'0',C_0
 		MOV 		#'0',D_0
-		CLR		Seg0		; Zera o tempo em segundos do relÛgio 0 na vari·vel correspondente.
-		CLR		Min0		; Zera o tempo em minutos do relÛgio 0 na vari·vel correspondente.
+		CLR		Seg0		; Zera o tempo em segundos do rel√≥gio 0 na vari√°vel correspondente.
+		CLR		Min0		; Zera o tempo em minutos do rel√≥gio 0 na vari√°vel correspondente.
 		JMP 		Continue5		
 
-OF_D1:		MOV		#'0',D_1	; Tratamento de overflow do quarto dÌgito do relÛgio 1.
+OF_D1:		MOV		#'0',D_1	; Tratamento de overflow do quarto d√≠gito do rel√≥gio 1.
 		INC		C_1
 		CMP		C_1,#'6'
-		BEQ		OF_C1		; Vai para o tratamento de overflow do terceiro dÌgito do relÛgio 1.
+		BEQ		OF_C1		; Vai para o tratamento de overflow do terceiro d√≠gito do rel√≥gio 1.
 		JMP		ISRtim_Fim
 
-OF_C1:		MOV		#'0',C_1	; Tratamento de overflow do terceiro dÌgito do relÛgio 1.
+OF_C1:		MOV		#'0',C_1	; Tratamento de overflow do terceiro d√≠gito do rel√≥gio 1.
 		CLR		Seg1
 		INC		B_1
 		INC		Min1
 		CMP		B_1,#58
-		BEQ 		OF_B1		; Vai para o tratamento de overflow do segundo dÌgito do relÛgio 1.
+		BEQ 		OF_B1		; Vai para o tratamento de overflow do segundo d√≠gito do rel√≥gio 1.
 		JMP 		ISRtim_Fim
 
-OF_B1:		MOV		#'0',B_1	; Tratamento de overflow do segundo dÌgito do relÛgio 1.
+OF_B1:		MOV		#'0',B_1	; Tratamento de overflow do segundo d√≠gito do rel√≥gio 1.
 		INC		A_1
 		CMP		A_1,#'6'
-		BEQ		OF_A1		; Vai para o zeramento de todos dÌgitos do relÛgio 1, pois foi atingida uma hora.
+		BEQ		OF_A1		; Vai para o zeramento de todos d√≠gitos do rel√≥gio 1, pois foi atingida uma hora.
 		JMP 		ISRtim_Fim
 
-OF_A1:		MOV 		#'0',A_1	; Zeramento de todos os dÌgitos do relÛgio 1, depois que o relÛgio 1 atinge uma hora.
+OF_A1:		MOV 		#'0',A_1	; Zeramento de todos os d√≠gitos do rel√≥gio 1, depois que o rel√≥gio 1 atinge uma hora.
 		MOV 		#'0',B_1
 		MOV 		#'0',C_1
 		MOV 		#'0',D_1
-		CLR		Seg1		; Zera o tempo em segundos do relÛgio 1 na vari·vel correspondente.	
-		CLR		Min1		; Zera o tempo em minutos do relÛgio 1 na vari·vel correspondente.
+		CLR		Seg1		; Zera o tempo em segundos do rel√≥gio 1 na vari√°vel correspondente.	
+		CLR		Min1		; Zera o tempo em minutos do rel√≥gio 1 na vari√°vel correspondente.
 		JMP 		ISRtim_Fim
 
 
-ISRtec:		TST		TECST		; Testa se existe alguma tecla disponÌvel.
+ISRtec:		TST		TECST		; Testa se existe alguma tecla dispon√≠vel.
 		BEQ		ISRtec1
 		CMP		TECDT,#44
-		BEQ		Visivel_0	; Muda o estado de visibilidade do relogio 0, pois foi pressionada a tecla <, cujo ASCII È 44.
+		BEQ		Visivel_0	; Muda o estado de visibilidade do relogio 0, pois foi pressionada a tecla <, cujo ASCII √© 44.
 		CMP		TECDT,#46
-		BEQ		Visivel_1	; Muda o estado de visibilidade do relogio 1, pois foi pressionada a tecla >, cujo ASCII È 46.
-		MOV		TECDT,Tecla	; Armazena o conte˙do do teclado na vari·vel tecla, caso a tecla seja v·lida.
+		BEQ		Visivel_1	; Muda o estado de visibilidade do relogio 1, pois foi pressionada a tecla >, cujo ASCII √© 46.
+		MOV		TECDT,Tecla	; Armazena o conte√∫do do teclado na vari√°vel tecla, caso a tecla seja v√°lida.
 
 ISRtec_2:	CLR		TECST		; Reseta o estado do teclado.
 
-ISRtec1:	RTS		R7		; Retorno da subrotina correspondente ‡ funÁ„o.
+ISRtec1:	RTS		R7		; Retorno da subrotina correspondente √† fun√ß√£o.
 
-Aparece0:	OR		#1,Status0	; Coloca o valor 1 no bit menos significativo do relÛgio 0, fazendo ele aparecer.
-		MOV		A_0,65524	; Coloca todos os dÌgitos do relÛgio 0 no visor.
+Aparece0:	OR		#1,Status0	; Coloca o valor 1 no bit menos significativo do rel√≥gio 0, fazendo ele aparecer.
+		MOV		A_0,65524	; Coloca todos os d√≠gitos do rel√≥gio 0 no visor.
 		MOV		B_0,65525
 		MOV		#':',65526
 		MOV		C_0,65527
 		MOV		D_0,65528
 		JMP		ISRtec_2
 
-Visivel_0:	CMP		Status0,#0	; Verifica se o relÛgio 0 est· invisÌvel.
-		BEQ		Aparece0	; Coloca o valor 1 no bit menos significativo do relÛgio 0, fazendo ele aparecer.
-		CMP		Status0,#1	; Verifica se o relÛgio 0 est· visÌvel.
-		BEQ		Desaparece0	; Coloca o valor 0 no bit menos significativo do relÛgio 0, fazendo ele desaparecer.
-		CMP		Status0,#2	; Verifica se o relÛgio 0 est· invisÌvel.
-		BEQ		Aparece0	; Coloca o valor 1 no bit menos significativo do relÛgio 0, fazendo ele aparecer.
-		CMP		Status0,#3	; Verifica se o relÛgio 0 est· visÌvel.
-		BEQ		Desaparece0	; Coloca o valor 0 no bit menos significativo do relÛgio 0, fazendo ele desaparecer.
+Visivel_0:	CMP		Status0,#0	; Verifica se o rel√≥gio 0 est√° invis√≠vel.
+		BEQ		Aparece0	; Coloca o valor 1 no bit menos significativo do rel√≥gio 0, fazendo ele aparecer.
+		CMP		Status0,#1	; Verifica se o rel√≥gio 0 est√° vis√≠vel.
+		BEQ		Desaparece0	; Coloca o valor 0 no bit menos significativo do rel√≥gio 0, fazendo ele desaparecer.
+		CMP		Status0,#2	; Verifica se o rel√≥gio 0 est√° invis√≠vel.
+		BEQ		Aparece0	; Coloca o valor 1 no bit menos significativo do rel√≥gio 0, fazendo ele aparecer.
+		CMP		Status0,#3	; Verifica se o rel√≥gio 0 est√° vis√≠vel.
+		BEQ		Desaparece0	; Coloca o valor 0 no bit menos significativo do rel√≥gio 0, fazendo ele desaparecer.
 
-Visivel_1:	CMP		Status1,#0	; Verifica se o relÛgio 1 est· invisÌvel.
-		BEQ		Aparece1	; Coloca o valor 1 no bit menos significativo do relÛgio 1, fazendo ele aparecer.
-		CMP		Status1,#1	; Verifica se o relÛgio 1 est· visÌvel.
-		BEQ		Desaparece1	; Coloca o valor 0 no bit menos significativo do relÛgio 1, fazendo ele desaparecer.
-		CMP		Status1,#2	; Verifica se o relÛgio 1 est· invisÌvel.
-		BEQ		Aparece1	; Coloca o valor 1 no bit menos significativo do relÛgio 1, fazendo ele aparecer.
-		CMP		Status1,#3	; Verifica se o relÛgio 1 est· visÌvel.
-		BEQ		Desaparece1	; Coloca o valor 0 no bit menos significativo do relÛgio 1, fazendo ele desaparecer.
+Visivel_1:	CMP		Status1,#0	; Verifica se o rel√≥gio 1 est√° invis√≠vel.
+		BEQ		Aparece1	; Coloca o valor 1 no bit menos significativo do rel√≥gio 1, fazendo ele aparecer.
+		CMP		Status1,#1	; Verifica se o rel√≥gio 1 est√° vis√≠vel.
+		BEQ		Desaparece1	; Coloca o valor 0 no bit menos significativo do rel√≥gio 1, fazendo ele desaparecer.
+		CMP		Status1,#2	; Verifica se o rel√≥gio 1 est√° invis√≠vel.
+		BEQ		Aparece1	; Coloca o valor 1 no bit menos significativo do rel√≥gio 1, fazendo ele aparecer.
+		CMP		Status1,#3	; Verifica se o rel√≥gio 1 est√° vis√≠vel.
+		BEQ		Desaparece1	; Coloca o valor 0 no bit menos significativo do rel√≥gio 1, fazendo ele desaparecer.
 
-Desaparece0: 	AND		#HFE,Status0	; Coloca o valor 0 no bit menos significativo do relÛgio 1, fazendo ele desaparecer.
-		MOV		#' ',65524	; Apaga todos os dÌgitos do relÛgio 0 no visor.
+Desaparece0: 	AND		#HFE,Status0	; Coloca o valor 0 no bit menos significativo do rel√≥gio 1, fazendo ele desaparecer.
+		MOV		#' ',65524	; Apaga todos os d√≠gitos do rel√≥gio 0 no visor.
 		MOV		#' ',65525
 		MOV		#' ',65526
 		MOV		#' ',65527
 		MOV		#' ',65528
 		JMP 		ISRtec_2
 
-Aparece1:	OR		#1,Status1	; Coloca o valor 1 no bit menos significativo do relÛgio 1, fazendo ele aparecer.
-		MOV		A_1,65531	; Coloca todos os dÌgitos do relÛgio 1 no visor.
+Aparece1:	OR		#1,Status1	; Coloca o valor 1 no bit menos significativo do rel√≥gio 1, fazendo ele aparecer.
+		MOV		A_1,65531	; Coloca todos os d√≠gitos do rel√≥gio 1 no visor.
 		MOV		B_1,65532
 		MOV		#':',65533
 		MOV		C_1,65534
 		MOV		D_1,65535
 		JMP		ISRtec_2
 
-Desaparece1: 	AND		#HFE,Status1	; Coloca o valor 0 no bit menos significativo do relÛgio 1, fazendo ele desaparecer.
-		MOV		#' ',65531	; Apaga todos os dÌgitos do relÛgio 1 no visor.
+Desaparece1: 	AND		#HFE,Status1	; Coloca o valor 0 no bit menos significativo do rel√≥gio 1, fazendo ele desaparecer.
+		MOV		#' ',65531	; Apaga todos os d√≠gitos do rel√≥gio 1 no visor.
 		MOV		#' ',65532
 		MOV		#' ',65533
 		MOV		#' ',65534
 		MOV		#' ',65535
 		JMP		ISRtec_2
 
-ISR3:		MOV		(R6)+,R5	; Retorna os conte˙dos dos seis primeiros registradores, que estavam armazenados na pilha.
+ISR3:		MOV		(R6)+,R5	; Retorna os conte√∫dos dos seis primeiros registradores, que estavam armazenados na pilha.
 		MOV		(R6)+,R4
 		MOV		(R6)+,R3
 		MOV		(R6)+,R2
 		MOV		(R6)+,R1
 		MOV		(R6)+,R0
 
-		RTI				; Retorna das interrupÁıes.
+		RTI				; Retorna das interrup√ß√µes.
 
-; DeclaraÁıes das vari·veis internas do Kernel:
+; Declara√ß√µes das vari√°veis internas do Kernel:
 
-Cursor:		DW 0	; Vari·vel respons·vel por indicar a posiÁ„o do visor a ser preenchida.
-Count:		DW 0    ; Vari·vel respons·vel por auxiliar na operaÁ„o de multiplicaÁ„o.
+Cursor:		DW 0	; Vari√°vel respons√°vel por indicar a posi√ß√£o do visor a ser preenchida.
+Count:		DW 0    ; Vari√°vel respons√°vel por auxiliar na opera√ß√£o de multiplica√ß√£o.
 
-Status0:	DW 0	; Vari·vel respons·vel por indicar o status do relÛgio 0 (se est· visÌvel e se est· andando).
-Min0:		DW 0	; Vari·vel respons·vel por indicar o tempo em minutos do relÛgio 0.
-Seg0:		DW 0	; Vari·vel respons·vel por indicar o tempo em segundos do relÛgio 0.
+Status0:	DW 0	; Vari√°vel respons√°vel por indicar o status do rel√≥gio 0 (se est√° vis√≠vel e se est√° andando).
+Min0:		DW 0	; Vari√°vel respons√°vel por indicar o tempo em minutos do rel√≥gio 0.
+Seg0:		DW 0	; Vari√°vel respons√°vel por indicar o tempo em segundos do rel√≥gio 0.
 
-Status1:	DW 0	; Vari·vel respons·vel por indicar o status do relÛgio 1 (se est· visÌvel e se est· andando).
-Min1:		DW 0	; Vari·vel respons·vel por indicar o tempo em minutos do relÛgio 1.
-Seg1:		DW 0	; Vari·vel respons·vel por indicar o tempo em segundos do relÛgio 1.
+Status1:	DW 0	; Vari√°vel respons√°vel por indicar o status do rel√≥gio 1 (se est√° vis√≠vel e se est√° andando).
+Min1:		DW 0	; Vari√°vel respons√°vel por indicar o tempo em minutos do rel√≥gio 1.
+Seg1:		DW 0	; Vari√°vel respons√°vel por indicar o tempo em segundos do rel√≥gio 1.
 
-Tecla:		DW 0	; Vari·vel respons·vel por armazenar o ASCII de uma tecla digitada.
-TeclaAux:	DW 0	; Vari·vel respons·vel por armazenar o ASCII do caractere da posiÁ„o do cursor no visor.
+Tecla:		DW 0	; Vari√°vel respons√°vel por armazenar o ASCII de uma tecla digitada.
+TeclaAux:	DW 0	; Vari√°vel respons√°vel por armazenar o ASCII do caractere da posi√ß√£o do cursor no visor.
 
-Ciclo:		DW 0	; Vari·vel respons·vel por contabilizar tempo de meio segundo ou de um segundo na rotina de interrupÁ„o do timer.
+Ciclo:		DW 0	; Vari√°vel respons√°vel por contabilizar tempo de meio segundo ou de um segundo na rotina de interrup√ß√£o do timer.
 
-A_0:		DW '0'	; Vari·vel que representa o primeiro dÌgito do relÛgio 0.
-B_0:		DW '0'	; Vari·vel que representa o segundo dÌgito do relÛgio 0.
-C_0:		DW '0'	; Vari·vel que representa o terceiro dÌgito do relÛgio 0.
-D_0:		DW '0'	; Vari·vel que representa o quarto dÌgito do relÛgio 0.
+A_0:		DW '0'	; Vari√°vel que representa o primeiro d√≠gito do rel√≥gio 0.
+B_0:		DW '0'	; Vari√°vel que representa o segundo d√≠gito do rel√≥gio 0.
+C_0:		DW '0'	; Vari√°vel que representa o terceiro d√≠gito do rel√≥gio 0.
+D_0:		DW '0'	; Vari√°vel que representa o quarto d√≠gito do rel√≥gio 0.
 
-A_1:		DW '0'	; Vari·vel que representa o primeiro dÌgito do relÛgio 1.
-B_1:		DW '0'	; Vari·vel que representa o segundo dÌgito do relÛgio 1.
-C_1:		DW '0'	; Vari·vel que representa o terceiro dÌgito do relÛgio 1.
-D_1:		DW '0'	; Vari·vel que representa o quarto dÌgito do relÛgio 1.
-
-
-
-
-
-
-
-
-
+A_1:		DW '0'	; Vari√°vel que representa o primeiro d√≠gito do rel√≥gio 1.
+B_1:		DW '0'	; Vari√°vel que representa o segundo d√≠gito do rel√≥gio 1.
+C_1:		DW '0'	; Vari√°vel que representa o terceiro d√≠gito do rel√≥gio 1.
+D_1:		DW '0'	; Vari√°vel que representa o quarto d√≠gito do rel√≥gio 1.
